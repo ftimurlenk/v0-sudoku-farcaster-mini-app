@@ -1,0 +1,13 @@
+{
+  "accountAssociation": {
+    "header": "farcaster-miniapp-verification",
+    "payload": "your-farcaster-fid",
+    "signature": "your-signature-here"
+  },
+  "miniApp": {
+    "name": "Sudoku",
+    "description": "Challenge your mind with classic Sudoku puzzle game",
+    "url": "https://your-app-url.com",
+    "iconUrl": "/placeholder.svg?height=400&width=400"
+  }
+}
