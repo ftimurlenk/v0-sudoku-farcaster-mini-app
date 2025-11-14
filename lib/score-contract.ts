@@ -5,10 +5,26 @@ export const SUDOKU_SCORE_ABI = [
       { internalType: 'uint8', name: 'difficulty', type: 'uint8' },
       { internalType: 'uint256', name: 'timeInSeconds', type: 'uint256' },
       { internalType: 'uint256', name: 'score', type: 'uint256' },
+      { internalType: 'bytes32', name: 'gameId', type: 'bytes32' },
+      { internalType: 'bytes', name: 'signature', type: 'bytes' },
     ],
     name: 'saveScore',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '_validator', type: 'address' }],
+    name: 'setValidator',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'validator',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
     type: 'function',
   },
   {
@@ -27,8 +43,9 @@ export const SUDOKU_SCORE_ABI = [
           { internalType: 'address', name: 'player', type: 'address' },
           { internalType: 'uint256', name: 'score', type: 'uint256' },
           { internalType: 'uint8', name: 'difficulty', type: 'uint8' },
+          { internalType: 'uint256', name: 'timestamp', type: 'uint256' },
         ],
-        internalType: 'struct SudokuScore.ScoreEntry[]',
+        internalType: 'struct SudokuScoreSecure.ScoreEntry[]',
         name: '',
         type: 'tuple[]',
       },
@@ -47,7 +64,7 @@ export const SUDOKU_SCORE_ABI = [
           { internalType: 'uint8', name: 'difficulty', type: 'uint8' },
           { internalType: 'uint256', name: 'timestamp', type: 'uint256' },
         ],
-        internalType: 'struct SudokuScore.ScoreEntry[]',
+        internalType: 'struct SudokuScoreSecure.ScoreEntry[]',
         name: '',
         type: 'tuple[]',
       },
@@ -57,8 +74,11 @@ export const SUDOKU_SCORE_ABI = [
   },
 ] as const
 
-// Contract address on Base Network (replace with your deployed contract)
-export const SUDOKU_SCORE_CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`
+// Contract address on Base Network - UPDATE THIS AFTER DEPLOYMENT
+export const SUDOKU_SCORE_CONTRACT_ADDRESS = (
+  process.env.NEXT_PUBLIC_SUDOKU_CONTRACT_ADDRESS || 
+  '0x0000000000000000000000000000000000000000'
+) as `0x${string}`
 
 // Difficulty enum mapping
 export const DIFFICULTY_ENUM = {

@@ -1,64 +1,63 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract SudokuScoreSecure {
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+
+contract SudokuScoreSecure is Ownable {
+    using ECDSA for bytes32;
+    using MessageHashUtils for bytes32;
+
     struct ScoreEntry {
         address player;
         uint256 score;
-        uint8 difficulty; // 0: easy, 1: medium, 2: hard
+        uint8 difficulty;
         uint256 timestamp;
     }
 
-    address public validator;
-    address public owner;
-    
     mapping(address => uint256) public playerBestScores;
     mapping(address => ScoreEntry[]) public playerScores;
-    mapping(bytes32 => bool) public usedGameIds;
+    mapping(bytes32 => bool) public usedSignatures;
     ScoreEntry[] public leaderboard;
 
+    address public validator;
+
     event ScoreSaved(address indexed player, uint256 score, uint8 difficulty, uint256 timeInSeconds);
+    event ValidatorUpdated(address indexed newValidator);
 
-    constructor() {
-        owner = msg.sender;
-        validator = msg.sender; // Initially set to owner, change this after deployment
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner");
-        _;
+    constructor() Ownable(msg.sender) {
+        validator = msg.sender;
     }
 
     function setValidator(address _validator) external onlyOwner {
+        require(_validator != address(0), "Invalid validator address");
         validator = _validator;
+        emit ValidatorUpdated(_validator);
     }
 
     function saveScore(
-        uint8 difficulty, 
-        uint256 timeInSeconds, 
+        uint8 difficulty,
+        uint256 timeInSeconds,
         uint256 score,
         bytes32 gameId,
         bytes memory signature
     ) external {
         require(difficulty <= 2, "Invalid difficulty");
         require(score > 0, "Invalid score");
-        require(!usedGameIds[gameId], "Game ID already used");
+        require(!usedSignatures[gameId], "Game already submitted");
 
-        // Verify signature from backend
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            msg.sender,
-            difficulty,
-            timeInSeconds,
-            score,
-            gameId
-        ));
-        bytes32 ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
+        // Verify signature from validator
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(msg.sender, difficulty, timeInSeconds, score, gameId)
+        );
+        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
+        address recoveredSigner = ethSignedMessageHash.recover(signature);
         
-        address signer = recoverSigner(ethSignedHash, signature);
-        require(signer == validator, "Invalid signature");
+        require(recoveredSigner == validator, "Invalid signature");
 
-        // Mark game ID as used to prevent replay attacks
-        usedGameIds[gameId] = true;
+        // Mark signature as used to prevent replay attacks
+        usedSignatures[gameId] = true;
 
         ScoreEntry memory newEntry = ScoreEntry({
             player: msg.sender,
@@ -80,8 +79,8 @@ contract SudokuScoreSecure {
     function updateLeaderboard(ScoreEntry memory entry) private {
         leaderboard.push(entry);
         
-        // Sort leaderboard (top 10)
-        for (uint i = leaderboard.length - 1; i > 0 && i < 10; i--) {
+        // Sort leaderboard (top 100 for better competition)
+        for (uint i = leaderboard.length - 1; i > 0 && i < 100; i--) {
             if (leaderboard[i].score > leaderboard[i - 1].score) {
                 ScoreEntry memory temp = leaderboard[i];
                 leaderboard[i] = leaderboard[i - 1];
@@ -89,26 +88,10 @@ contract SudokuScoreSecure {
             }
         }
 
-        // Keep only top 10
-        if (leaderboard.length > 10) {
+        // Keep only top 100
+        if (leaderboard.length > 100) {
             leaderboard.pop();
         }
-    }
-
-    function recoverSigner(bytes32 ethSignedHash, bytes memory signature) private pure returns (address) {
-        require(signature.length == 65, "Invalid signature length");
-
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-
-        assembly {
-            r := mload(add(signature, 32))
-            s := mload(add(signature, 64))
-            v := byte(0, mload(add(signature, 96)))
-        }
-
-        return ecrecover(ethSignedHash, v, r, s);
     }
 
     function getPlayerBestScore(address player) external view returns (uint256) {

@@ -54,6 +54,7 @@ export default function SudokuGame() {
   const [notes, setNotes] = useState<Set<number>[][]>([])
   const [initialHints, setInitialHints] = useState<number>(5)
   const [gameStarted, setGameStarted] = useState(false)
+  const [gameId, setGameId] = useState<string>('')
 
   const { address, isConnected } = useAccount()
   const { writeContract, data: hash } = useWriteContract()
@@ -103,6 +104,7 @@ export default function SudokuGame() {
     setNotes(Array(9).fill(null).map(() => Array(9).fill(null).map(() => new Set<number>())))
     setNotesMode(false)
     setGameStarted(false)
+    setGameId(`game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   }
 
   const handleStartGame = () => {
@@ -256,16 +258,52 @@ export default function SudokuGame() {
     }
 
     try {
+      toast.info('Authenticating with Farcaster...')
+      const { token } = await sdk.quickAuth.getToken()
+      
+      toast.info('Validating your game...')
+      
+      const validationResponse = await fetch('/api/validate-score', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          playerAddress: address,
+          difficulty: DIFFICULTY_ENUM[difficulty],
+          timeInSeconds: elapsedTime,
+          score: finalScore,
+          puzzle,
+          solution: userBoard,
+          gameId,
+        }),
+      })
+
+      if (!validationResponse.ok) {
+        const error = await validationResponse.json()
+        toast.error(error.error || 'Validation failed')
+        return
+      }
+
+      const { signature, gameId: validatedGameId } = await validationResponse.json()
+
       writeContract({
         address: SUDOKU_SCORE_CONTRACT_ADDRESS,
         abi: SUDOKU_SCORE_ABI,
         functionName: 'saveScore',
-        args: [DIFFICULTY_ENUM[difficulty], BigInt(elapsedTime), BigInt(finalScore)],
+        args: [
+          DIFFICULTY_ENUM[difficulty],
+          BigInt(elapsedTime),
+          BigInt(finalScore),
+          validatedGameId as `0x${string}`,
+          signature as `0x${string}`,
+        ],
       })
       toast.info('Saving score to Base Network...')
     } catch (error) {
       console.error('[v0] Error saving score:', error)
-      toast.error('Failed to save score')
+      toast.error('Failed to save score. Please try again.')
     }
   }
 
