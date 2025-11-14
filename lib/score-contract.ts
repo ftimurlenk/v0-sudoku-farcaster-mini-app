@@ -77,7 +77,7 @@ export const SUDOKU_SCORE_ABI = [
 // Contract address on Base Network - UPDATE THIS AFTER DEPLOYMENT
 export const SUDOKU_SCORE_CONTRACT_ADDRESS = (
   process.env.NEXT_PUBLIC_SUDOKU_CONTRACT_ADDRESS || 
-  '0x1249AC492dB6dA224263b65D80dbd5414b68C627'
+  '0x0000000000000000000000000000000000000000'
 ) as `0x${string}`
 
 // Difficulty enum mapping

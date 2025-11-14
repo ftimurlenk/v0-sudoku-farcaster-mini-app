@@ -1,33 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@farcaster/quick-auth'
-import { Wallet, hashMessage } from 'ethers'
-
-const client = createClient()
-const domain = process.env.NEXT_PUBLIC_APP_DOMAIN || 'localhost:3000'
+import { Wallet } from 'ethers'
 
 export async function POST(request: NextRequest) {
   try {
-    const authorization = request.headers.get('Authorization')
-    if (!authorization?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No token provided' },
-        { status: 401 }
-      )
-    }
-
-    const token = authorization.split(' ')[1]
-
-    let fid: number
-    try {
-      const payload = await client.verifyJwt({ token, domain })
-      fid = payload.sub
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Invalid Farcaster token' },
-        { status: 401 }
-      )
-    }
-
     const { 
       playerAddress, 
       difficulty, 
@@ -38,6 +13,7 @@ export async function POST(request: NextRequest) {
       gameId 
     } = await request.json()
 
+    // Validate the Sudoku solution
     if (!validateSudoku(puzzle, solution)) {
       return NextResponse.json(
         { error: 'Invalid solution - Puzzle not correctly solved' },
@@ -45,6 +21,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate the score calculation
     const expectedScore = calculateScore(difficulty, timeInSeconds)
     if (Math.abs(expectedScore - score) > 100) {
       return NextResponse.json(
@@ -53,6 +30,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check minimum time to prevent obvious cheating
     const minTime = difficulty === 0 ? 30 : difficulty === 1 ? 60 : 120
     if (timeInSeconds < minTime) {
       return NextResponse.json(
@@ -61,29 +39,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!process.env.VALIDATOR_PRIVATE_KEY) {
+    if (!process.env.BACKEND_SIGNER_PRIVATE_KEY) {
       return NextResponse.json(
-        { error: 'Server configuration error' },
+        { error: 'Server configuration error - Backend signer not configured' },
         { status: 500 }
       )
     }
 
-    const validator = new Wallet(process.env.VALIDATOR_PRIVATE_KEY)
+    // Sign the score with backend private key
+    const backendWallet = new Wallet(process.env.BACKEND_SIGNER_PRIVATE_KEY)
     
-    const messageHash = hashMessage(
-      Buffer.from(
-        `${playerAddress}${difficulty}${timeInSeconds}${score}${gameId}`.replace(/^0x/, ''),
-        'hex'
-      )
-    )
+    // Create message hash matching the contract's format
+    const messageHash = `${playerAddress}${difficulty}${timeInSeconds}${score}${gameId}`
     
-    const signature = await validator.signMessage(messageHash)
+    const signature = await backendWallet.signMessage(messageHash)
 
     return NextResponse.json({
       signature,
       gameId,
       validated: true,
-      fid, // Return FID for reference
     })
 
   } catch (error) {
@@ -171,3 +145,4 @@ function calculateScore(difficulty: number, timeInSeconds: number): number {
   
   return Math.round(baseScore * timeMultiplier)
 }
+</parameter>

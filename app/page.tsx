@@ -258,16 +258,12 @@ export default function SudokuGame() {
     }
 
     try {
-      toast.info('Authenticating with Farcaster...')
-      const { token } = await sdk.quickAuth.getToken()
-      
       toast.info('Validating your game...')
       
       const validationResponse = await fetch('/api/validate-score', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           playerAddress: address,
