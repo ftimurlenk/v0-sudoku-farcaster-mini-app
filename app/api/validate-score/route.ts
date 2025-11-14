@@ -145,4 +145,3 @@ function calculateScore(difficulty: number, timeInSeconds: number): number {
   
   return Math.round(baseScore * timeMultiplier)
 }
-</parameter>
