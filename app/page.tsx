@@ -57,7 +57,7 @@ export default function SudokuGame() {
   const [gameId, setGameId] = useState<string>('')
 
   const { address, isConnected } = useAccount()
-  const { writeContract, data: hash } = useWriteContract()
+  const { writeContract, data: hash, error: writeError } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   })
@@ -82,6 +82,13 @@ export default function SudokuGame() {
       toast.success('Score saved to Base Network!')
     }
   }, [isConfirmed])
+
+  useEffect(() => {
+    if (writeError) {
+      console.error('[v0] Write contract error:', writeError)
+      toast.error(`Transaction failed: ${writeError.message}`)
+    }
+  }, [writeError])
 
   const startNewGame = (level: Difficulty) => {
     setIsLoading(true)
@@ -255,9 +262,16 @@ export default function SudokuGame() {
     console.log('[v0] handleSaveScore called')
     console.log('[v0] isConnected:', isConnected)
     console.log('[v0] address:', address)
+    console.log('[v0] Contract address:', SUDOKU_SCORE_CONTRACT_ADDRESS)
     
     if (!isConnected) {
       toast.error('Please connect your wallet first')
+      return
+    }
+
+    if (!SUDOKU_SCORE_CONTRACT_ADDRESS || SUDOKU_SCORE_CONTRACT_ADDRESS === '0x0000000000000000000000000000000000000000') {
+      console.error('[v0] Contract address not configured')
+      toast.error('Smart contract not deployed yet. Please contact the administrator.')
       return
     }
 
@@ -299,22 +313,41 @@ export default function SudokuGame() {
       console.log('[v0] Validated game ID:', validatedGameId)
 
       console.log('[v0] Writing to contract...')
-      writeContract({
-        address: SUDOKU_SCORE_CONTRACT_ADDRESS,
-        abi: SUDOKU_SCORE_ABI,
-        functionName: 'saveScore',
-        args: [
-          DIFFICULTY_ENUM[difficulty],
-          BigInt(elapsedTime),
-          BigInt(finalScore),
-          validatedGameId as `0x${string}`,
-          signature as `0x${string}`,
-        ],
-      })
-      toast.info('Saving score to Base Network...')
-    } catch (error) {
+      console.log('[v0] Contract args:', [
+        DIFFICULTY_ENUM[difficulty],
+        BigInt(elapsedTime),
+        BigInt(finalScore),
+        validatedGameId,
+        signature,
+      ])
+
+      try {
+        writeContract({
+          address: SUDOKU_SCORE_CONTRACT_ADDRESS as `0x${string}`,
+          abi: SUDOKU_SCORE_ABI,
+          functionName: 'saveScore',
+          args: [
+            DIFFICULTY_ENUM[difficulty],
+            BigInt(elapsedTime),
+            BigInt(finalScore),
+            validatedGameId as `0x${string}`,
+            signature as `0x${string}`,
+          ],
+        })
+        console.log('[v0] Transaction initiated')
+        toast.info('Transaction sent! Waiting for confirmation...')
+      } catch (txError) {
+        console.error('[v0] Transaction error:', txError)
+        throw txError
+      }
+    } catch (error: any) {
       console.error('[v0] Error saving score:', error)
-      toast.error('Failed to save score. Please try again.')
+      console.error('[v0] Error details:', {
+        message: error?.message,
+        code: error?.code,
+        data: error?.data,
+      })
+      toast.error(error?.message || 'Failed to save score. Please try again.')
     }
   }
 
