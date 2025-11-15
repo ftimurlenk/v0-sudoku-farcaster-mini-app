@@ -13,9 +13,9 @@
     "buttonTitle": "Play Sudoku",
     "splashImageUrl": "https://basedoku.vercel.app/sudoku-puzzle-game.jpg",
     "splashBackgroundColor": "#1a1a2e",
-    "subtitle": "Classic Sudoku puzzle game on Base",
+    "subtitle": "Classic Sudoku on Base",
     "description": "Challenge your mind with classic Sudoku puzzle game. Play easy, medium, or hard levels. Save your scores onchain on Base Network and compete on the global leaderboard.",
-    "primaryCategory": "game",
+    "primaryCategory": "games",
     "tags": [
       "sudoku",
       "puzzle",
@@ -23,7 +23,7 @@
       "base",
       "onchain"
     ],
-    "tagline": "Classic Sudoku puzzle game on Base",
+    "tagline": "Puzzle game on Base Network",
     "ogTitle": "BaseDoku - Sudoku on Base",
     "ogDescription": "Challenge your mind with classic Sudoku. Compete on the leaderboard and save scores onchain.",
     "ogImageUrl": "https://basedoku.vercel.app/sudoku-puzzle-game.jpg"
