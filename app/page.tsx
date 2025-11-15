@@ -11,6 +11,7 @@ import { WalletConnect } from '@/components/wallet-connect'
 import { ScoreDisplay } from '@/components/score-display'
 import { SaveScoreDialog } from '@/components/save-score-dialog'
 import { Tutorial, TutorialButton } from '@/components/tutorial'
+import { AddToAppsDialog } from '@/components/add-to-apps-dialog'
 import { generatePuzzle, validateSolution, type Difficulty } from '@/lib/sudoku-generator'
 import {
   SUDOKU_SCORE_ABI,
@@ -389,6 +390,7 @@ export default function SudokuGame() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-3 sm:p-4 md:p-6">
       <Tutorial />
+      <AddToAppsDialog />
       
       <div className="w-full max-w-2xl space-y-4 sm:space-y-6 animate-fade-in">
         <header className="text-center">
