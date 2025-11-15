@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Wallet, solidityPackedKeccak256 } from 'ethers'
+import { Wallet, keccak256, toUtf8Bytes, getBytes, concat, zeroPadValue, toBeHex } from 'ethers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,21 +46,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const gameIdHash = solidityPackedKeccak256(['string'], [gameId])
+    const gameIdHash = keccak256(toUtf8Bytes(gameId))
 
-    // Sign the score with backend private key
     const backendWallet = new Wallet(process.env.BACKEND_SIGNER_PRIVATE_KEY)
     
-    const messageHash = solidityPackedKeccak256(
-      ['address', 'uint8', 'uint256', 'uint256', 'bytes32'],
-      [playerAddress, difficulty, timeInSeconds, score, gameIdHash]
-    )
+    // Manually encode packed (address + uint8 + uint256 + uint256 + bytes32)
+    const addressBytes = getBytes(playerAddress) // 20 bytes
+    const difficultyBytes = new Uint8Array([difficulty]) // 1 byte
+    const timeBytes = getBytes(zeroPadValue(toBeHex(timeInSeconds), 32)) // 32 bytes
+    const scoreBytes = getBytes(zeroPadValue(toBeHex(score), 32)) // 32 bytes
+    const gameIdBytes = getBytes(gameIdHash) // 32 bytes
     
-    const signature = await backendWallet.signMessage(messageHash)
+    const packed = concat([
+      addressBytes,
+      difficultyBytes, 
+      timeBytes,
+      scoreBytes,
+      gameIdBytes
+    ])
+    
+    const messageHash = keccak256(packed)
+    
+    const signature = await backendWallet.signMessage(getBytes(messageHash))
 
     return NextResponse.json({
       signature,
-      gameId: gameIdHash, // Return the hashed gameId
+      gameId: gameIdHash,
       validated: true,
     })
 
