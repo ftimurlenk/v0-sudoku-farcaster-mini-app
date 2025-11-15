@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Wallet } from 'ethers'
+import { Wallet, solidityPackedKeccak256 } from 'ethers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,17 +46,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const gameIdHash = solidityPackedKeccak256(['string'], [gameId])
+
     // Sign the score with backend private key
     const backendWallet = new Wallet(process.env.BACKEND_SIGNER_PRIVATE_KEY)
     
-    // Create message hash matching the contract's format
-    const messageHash = `${playerAddress}${difficulty}${timeInSeconds}${score}${gameId}`
+    const messageHash = solidityPackedKeccak256(
+      ['address', 'uint8', 'uint256', 'uint256', 'bytes32'],
+      [playerAddress, difficulty, timeInSeconds, score, gameIdHash]
+    )
     
     const signature = await backendWallet.signMessage(messageHash)
 
     return NextResponse.json({
       signature,
-      gameId,
+      gameId: gameIdHash, // Return the hashed gameId
       validated: true,
     })
 

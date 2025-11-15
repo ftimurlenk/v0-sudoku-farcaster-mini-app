@@ -308,16 +308,16 @@ export default function SudokuGame() {
         return
       }
 
-      const { signature, gameId: validatedGameId } = await validationResponse.json()
+      const { signature, gameId: gameIdHash } = await validationResponse.json()
       console.log('[v0] Signature received:', signature)
-      console.log('[v0] Validated game ID:', validatedGameId)
+      console.log('[v0] GameId hash received:', gameIdHash)
 
       console.log('[v0] Writing to contract...')
       console.log('[v0] Contract args:', [
         DIFFICULTY_ENUM[difficulty],
         BigInt(elapsedTime),
         BigInt(finalScore),
-        validatedGameId,
+        gameIdHash,
         signature,
       ])
 
@@ -330,7 +330,7 @@ export default function SudokuGame() {
             DIFFICULTY_ENUM[difficulty],
             BigInt(elapsedTime),
             BigInt(finalScore),
-            validatedGameId as `0x${string}`,
+            gameIdHash as `0x${string}`,
             signature as `0x${string}`,
           ],
         })
