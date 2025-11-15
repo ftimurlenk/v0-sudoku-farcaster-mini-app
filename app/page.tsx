@@ -252,38 +252,53 @@ export default function SudokuGame() {
   }
 
   const handleSaveScore = async () => {
+    console.log('[v0] handleSaveScore called')
+    console.log('[v0] isConnected:', isConnected)
+    console.log('[v0] address:', address)
+    
     if (!isConnected) {
       toast.error('Please connect your wallet first')
       return
     }
 
     try {
+      console.log('[v0] Starting validation...')
       toast.info('Validating your game...')
+      
+      const requestBody = {
+        playerAddress: address,
+        difficulty: DIFFICULTY_ENUM[difficulty],
+        timeInSeconds: elapsedTime,
+        score: finalScore,
+        puzzle,
+        solution: userBoard,
+        gameId,
+      }
+      
+      console.log('[v0] Request body:', requestBody)
       
       const validationResponse = await fetch('/api/validate-score', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          playerAddress: address,
-          difficulty: DIFFICULTY_ENUM[difficulty],
-          timeInSeconds: elapsedTime,
-          score: finalScore,
-          puzzle,
-          solution: userBoard,
-          gameId,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log('[v0] Response status:', validationResponse.status)
+      
       if (!validationResponse.ok) {
         const error = await validationResponse.json()
+        console.log('[v0] Validation error:', error)
         toast.error(error.error || 'Validation failed')
         return
       }
 
       const { signature, gameId: validatedGameId } = await validationResponse.json()
+      console.log('[v0] Signature received:', signature)
+      console.log('[v0] Validated game ID:', validatedGameId)
 
+      console.log('[v0] Writing to contract...')
       writeContract({
         address: SUDOKU_SCORE_CONTRACT_ADDRESS,
         abi: SUDOKU_SCORE_ABI,
