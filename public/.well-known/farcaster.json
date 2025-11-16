@@ -3,11 +3,7 @@
     "header": "eyJmaWQiOjI2MDU0MiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDkxRmQ2NzI2NkZDNWYxZGJBODk5QjMwMjg5OTlEM0VmYzkxODJGZTkifQ",
     "payload": "eyJkb21haW4iOiJiYXNlZG9rdS52ZXJjZWwuYXBwIn0",
     "signature": "/Kr6tlDLVb6PRir965avvFWKG+Ta7o/jFwwX1FRVUHsuG00pySk1NZ2L0ihLFMEw7+LCjdLdpoCaLniXMs4EFxs="
-  },
-  "baseBuilder": {
-    "ownerAddress": "0x6f6040a8a980EAC41792D125beC113f4B0A0f300"
   }
-
   },
   "miniapp": {
     "version": "1",
@@ -28,6 +24,9 @@
       "base",
       "onchain"
     ],
+      "baseBuilder": {
+    "ownerAddress": "0x6f6040a8a980EAC41792D125beC113f4B0A0f300"
+  },
     "tagline": "Puzzle game on Base Network",
     "ogTitle": "BaseDoku - Sudoku on Base",
     "ogDescription": "Challenge your mind with classic Sudoku. Compete on the leaderboard and save scores onchain.",
