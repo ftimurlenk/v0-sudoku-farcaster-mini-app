@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ['latin'] })
 const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Sudoku Mini App',
-  description: 'Challenge your mind with classic Sudoku puzzle game',
+  title: 'BaseDoku - Sudoku on Base',
+  description: 'Challenge your mind with classic Sudoku. Compete on the leaderboard and save scores onchain.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -28,18 +28,40 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
+  openGraph: {
+    title: 'BaseDoku - Sudoku on Base',
+    description: 'Challenge your mind with classic Sudoku. Compete on the leaderboard and save scores onchain.',
+    url: 'https://basedoku.vercel.app',
+    siteName: 'BaseDoku',
+    images: [
+      {
+        url: 'https://basedoku.vercel.app/sudoku-puzzle-game.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'BaseDoku - Sudoku on Base Network',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BaseDoku - Sudoku on Base',
+    description: 'Challenge your mind with classic Sudoku. Compete on the leaderboard and save scores onchain.',
+    images: ['https://basedoku.vercel.app/sudoku-puzzle-game.jpg'],
+  },
   other: {
     'fc:miniapp': JSON.stringify({
       version: '1',
-      imageUrl: '/sudoku-puzzle-game.jpg',
+      imageUrl: 'https://basedoku.vercel.app/sudoku-puzzle-game.jpg',
       button: {
         title: '🎮 Play Sudoku',
         action: {
           type: 'launch_frame',
-          name: 'Sudoku',
-          url: process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com',
-          splashImageUrl: '/sudoku-logo.jpg',
-          splashBackgroundColor: '#0f172a',
+          name: 'BaseDoku',
+          url: 'https://basedoku.vercel.app',
+          splashImageUrl: 'https://basedoku.vercel.app/sudoku-puzzle-game.jpg',
+          splashBackgroundColor: '#1a1a2e',
         },
       },
     }),
@@ -58,15 +80,15 @@ export default function RootLayout({
           name="fc:miniapp"
           content={JSON.stringify({
             version: '1',
-            imageUrl: '/sudoku-puzzle-game.jpg',
+            imageUrl: 'https://basedoku.vercel.app/sudoku-puzzle-game.jpg',
             button: {
               title: '🎮 Play Sudoku',
               action: {
                 type: 'launch_frame',
-                name: 'Sudoku',
-                url: process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com',
-                splashImageUrl: '/sudoku-logo.jpg',
-                splashBackgroundColor: '#0f172a',
+                name: 'BaseDoku',
+                url: 'https://basedoku.vercel.app',
+                splashImageUrl: 'https://basedoku.vercel.app/sudoku-puzzle-game.jpg',
+                splashBackgroundColor: '#1a1a2e',
               },
             },
           })}
