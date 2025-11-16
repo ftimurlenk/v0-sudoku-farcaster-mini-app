@@ -55,8 +55,6 @@ export default function DailyChallengePage() {
   const [redoStack, setRedoStack] = useState<Move[]>([])
   const [isPaused, setIsPaused] = useState(false)
   const [pausedTime, setPausedTime] = useState<number>(0)
-  const [notesMode, setNotesMode] = useState(false)
-  const [notes, setNotes] = useState<Set<number>[][]>([])
   const [timeUntilNext, setTimeUntilNext] = useState({ hours: 0, minutes: 0, seconds: 0 })
 
   const { address, isConnected } = useAccount()
@@ -110,8 +108,6 @@ export default function DailyChallengePage() {
     setRedoStack([])
     setIsPaused(false)
     setPausedTime(0)
-    setNotes(Array(9).fill(null).map(() => Array(9).fill(null).map(() => new Set<number>())))
-    setNotesMode(false)
     setIsComplete(false)
     setScoreSaved(false)
   }
@@ -130,12 +126,6 @@ export default function DailyChallengePage() {
     newBoard[row][col] = value
     setUserBoard(newBoard)
 
-    if (value !== 0) {
-      const newNotes = notes.map(row => row.map(cell => new Set(cell)))
-      newNotes[row][col].clear()
-      setNotes(newNotes)
-    }
-
     const isBoardFull = newBoard.every(row => row.every(cell => cell !== 0))
     
     if (validateSolution(newBoard, solution)) {
@@ -150,34 +140,15 @@ export default function DailyChallengePage() {
     }
   }
 
-  const handleNoteToggle = (row: number, col: number, num: number) => {
-    if (puzzle[row][col] !== 0 || isPaused || userBoard[row][col] !== 0) return
-
-    const newNotes = notes.map(row => row.map(cell => new Set(cell)))
-    if (newNotes[row][col].has(num)) {
-      newNotes[row][col].delete(num)
-    } else {
-      newNotes[row][col].add(num)
-    }
-    setNotes(newNotes)
-  }
-
   const handleNumberSelect = (num: number) => {
     if (selectedCell && !isPaused) {
-      if (notesMode) {
-        handleNoteToggle(selectedCell.row, selectedCell.col, num)
-      } else {
-        handleCellChange(selectedCell.row, selectedCell.col, num)
-      }
+      handleCellChange(selectedCell.row, selectedCell.col, num)
     }
   }
 
   const handleClear = () => {
     if (selectedCell && !isPaused) {
       handleCellChange(selectedCell.row, selectedCell.col, 0)
-      const newNotes = notes.map(row => row.map(cell => new Set(cell)))
-      newNotes[selectedCell.row][selectedCell.col].clear()
-      setNotes(newNotes)
     }
   }
 
@@ -191,7 +162,6 @@ export default function DailyChallengePage() {
     setMoveHistory([])
     setRedoStack([])
     setPausedTime(0)
-    setNotes(Array(9).fill(null).map(() => Array(9).fill(null).map(() => new Set<number>())))
   }
 
   const handleUndo = () => {
@@ -327,11 +297,34 @@ export default function DailyChallengePage() {
         </Card>
 
         {!isComplete && startTime > 0 && (
-          <ScoreDisplay
-            time={elapsedTime}
-            score={calculateScore(elapsedTime, difficulty)}
-            difficulty={difficulty}
-          />
+          <Card>
+            <CardContent className="py-4">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <Clock className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Time</p>
+                    <p className="text-xl font-bold tabular-nums min-w-[60px]">
+                      {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-1/10">
+                    <span className="text-xl">🏆</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Score</p>
+                    <p className="text-xl font-bold tabular-nums text-chart-1 min-w-[70px]">
+                      {calculateScore(elapsedTime, difficulty).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         <div className="relative flex justify-center">
@@ -339,7 +332,7 @@ export default function DailyChallengePage() {
             puzzle={puzzle}
             userBoard={userBoard}
             solution={solution}
-            notes={notes}
+            notes={[]}
             onCellChange={handleCellChange}
             isComplete={isComplete}
             selectedCell={selectedCell}
@@ -358,8 +351,6 @@ export default function DailyChallengePage() {
         <NumericKeyboard
           onNumberSelect={handleNumberSelect}
           onClear={handleClear}
-          notesMode={notesMode}
-          onNotesToggle={() => setNotesMode(!notesMode)}
           disabled={isComplete || selectedCell === null || isPaused}
         />
 

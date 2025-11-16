@@ -21,12 +21,12 @@ export function ScoreDisplay({ time, score, difficulty, showPerformance = false 
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-center gap-3 rounded-lg border bg-card p-3 text-card-foreground sm:gap-6 sm:p-4">
+      <div className="flex items-center justify-center gap-6 rounded-lg border bg-card p-3 text-card-foreground sm:gap-8 sm:p-4">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-muted-foreground" />
           <div>
             <div className="text-xs text-muted-foreground">Time</div>
-            <div className="text-lg font-bold sm:text-xl">{formatTime(time)}</div>
+            <div className="text-lg font-bold tabular-nums sm:text-xl min-w-[60px]">{formatTime(time)}</div>
           </div>
         </div>
         <div className="h-8 w-px bg-border" />
@@ -34,7 +34,7 @@ export function ScoreDisplay({ time, score, difficulty, showPerformance = false 
           <Trophy className="h-5 w-5 text-yellow-500" />
           <div>
             <div className="text-xs text-muted-foreground">Score</div>
-            <div className="text-lg font-bold sm:text-xl">{score.toLocaleString()}</div>
+            <div className="text-lg font-bold tabular-nums sm:text-xl min-w-[70px]">{score.toLocaleString()}</div>
           </div>
         </div>
       </div>

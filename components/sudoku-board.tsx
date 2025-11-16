@@ -97,7 +97,7 @@ export function SudokuBoard({
                     'h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 cursor-pointer transition-all duration-200',
                     'grid grid-cols-3 grid-rows-3 gap-0 p-0.5',
                     !isInitial && 'bg-background hover:bg-accent',
-                    isSelected && !isComplete && 'ring-2 ring-chart-1 bg-accent'
+                    isSelected && !isComplete && 'ring-1 ring-primary/40 bg-accent/50'
                   )}>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
                       <div 
@@ -121,9 +121,9 @@ export function SudokuBoard({
                       isInitial
                         ? 'bg-muted text-foreground cursor-default'
                         : 'bg-background text-chart-1 cursor-pointer hover:bg-accent active:bg-accent',
-                      !isInitial && 'focus:bg-accent focus:ring-2 focus:ring-chart-1',
+                      !isInitial && 'focus:bg-accent focus:ring-1 focus:ring-primary/40',
                       isComplete && 'bg-chart-1/10 text-chart-1',
-                      isSelected && !isComplete && 'ring-2 ring-chart-1 bg-accent',
+                      isSelected && !isComplete && 'ring-1 ring-primary/40 bg-accent/50',
                       isCorrect && !isComplete && 'text-green-600 bg-green-50',
                       hasError && 'bg-red-500/20 text-red-500 ring-2 ring-red-500 animate-shake'
                     )}

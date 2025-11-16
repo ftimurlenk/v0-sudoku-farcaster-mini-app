@@ -51,8 +51,6 @@ export default function SudokuGame() {
   const [redoStack, setRedoStack] = useState<Move[]>([])
   const [isPaused, setIsPaused] = useState(false)
   const [pausedTime, setPausedTime] = useState<number>(0)
-  const [notesMode, setNotesMode] = useState(false)
-  const [notes, setNotes] = useState<Set<number>[][]>([])
   const [initialHints, setInitialHints] = useState<number>(5)
   const [gameStarted, setGameStarted] = useState(false)
   const [gameId, setGameId] = useState<string>('')
@@ -64,7 +62,19 @@ export default function SudokuGame() {
   })
 
   useEffect(() => {
-    sdk.actions.ready()
+    const initializeSdk = async () => {
+      try {
+        // Wait for SDK context to be available
+        if (sdk.context) {
+          await sdk.actions.ready()
+          console.log('[v0] SDK ready called successfully')
+        }
+      } catch (error) {
+        console.error('[v0] Error calling SDK ready:', error)
+      }
+    }
+
+    initializeSdk()
     startNewGame('easy')
   }, [])
 
@@ -109,8 +119,6 @@ export default function SudokuGame() {
     setRedoStack([])
     setIsPaused(false)
     setPausedTime(0)
-    setNotes(Array(9).fill(null).map(() => Array(9).fill(null).map(() => new Set<number>())))
-    setNotesMode(false)
     setGameStarted(false)
     setGameId(`game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   }
@@ -137,12 +145,6 @@ export default function SudokuGame() {
     const newBoard = userBoard.map((r) => [...r])
     newBoard[row][col] = value
     setUserBoard(newBoard)
-
-    if (value !== 0) {
-      const newNotes = notes.map(row => row.map(cell => new Set(cell)))
-      newNotes[row][col].clear()
-      setNotes(newNotes)
-    }
 
     const isBoardFull = newBoard.every(row => row.every(cell => cell !== 0))
     
@@ -180,34 +182,15 @@ export default function SudokuGame() {
     }
   }
 
-  const handleNoteToggle = (row: number, col: number, num: number) => {
-    if (puzzle[row][col] !== 0 || isPaused || userBoard[row][col] !== 0) return
-
-    const newNotes = notes.map(row => row.map(cell => new Set(cell)))
-    if (newNotes[row][col].has(num)) {
-      newNotes[row][col].delete(num)
-    } else {
-      newNotes[row][col].add(num)
-    }
-    setNotes(newNotes)
-  }
-
   const handleNumberSelect = (num: number) => {
     if (selectedCell && !isPaused) {
-      if (notesMode) {
-        handleNoteToggle(selectedCell.row, selectedCell.col, num)
-      } else {
-        handleCellChange(selectedCell.row, selectedCell.col, num)
-      }
+      handleCellChange(selectedCell.row, selectedCell.col, num)
     }
   }
 
   const handleClear = () => {
     if (selectedCell && !isPaused) {
       handleCellChange(selectedCell.row, selectedCell.col, 0)
-      const newNotes = notes.map(row => row.map(cell => new Set(cell)))
-      newNotes[selectedCell.row][selectedCell.col].clear()
-      setNotes(newNotes)
     }
   }
 
@@ -222,7 +205,6 @@ export default function SudokuGame() {
     setMoveHistory([])
     setRedoStack([])
     setPausedTime(0)
-    setNotes(Array(9).fill(null).map(() => Array(9).fill(null).map(() => new Set<number>())))
   }
 
   const handleUndo = () => {
@@ -452,7 +434,7 @@ export default function SudokuGame() {
             puzzle={puzzle}
             userBoard={userBoard}
             solution={solution}
-            notes={notes}
+            notes={[]}
             onCellChange={handleCellChange}
             isComplete={isComplete}
             selectedCell={selectedCell}
@@ -471,8 +453,6 @@ export default function SudokuGame() {
         <NumericKeyboard
           onNumberSelect={handleNumberSelect}
           onClear={handleClear}
-          notesMode={notesMode}
-          onNotesToggle={() => setNotesMode(!notesMode)}
           disabled={isComplete || selectedCell === null || isPaused}
         />
 

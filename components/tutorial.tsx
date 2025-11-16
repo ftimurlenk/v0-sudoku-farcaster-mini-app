@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { X } from 'lucide-react'
 
 const tutorialSteps = [
   {
@@ -30,7 +29,7 @@ const tutorialSteps = [
   {
     title: 'Game Features',
     description:
-      'Use Notes Mode to add candidate numbers. Get up to 5 hints per game. Pause anytime. Use Undo/Redo to fix mistakes.',
+      'Get up to 5 hints per game. Pause anytime. Use Undo/Redo to fix mistakes.',
   },
   {
     title: 'Scoring',
@@ -71,21 +70,18 @@ export function Tutorial() {
     handleComplete()
   }
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+    if (!open) {
+      setCurrentStep(0)
+    }
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>{tutorialSteps[currentStep].title}</DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSkip}
-              className="h-6 w-6"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle>{tutorialSteps[currentStep].title}</DialogTitle>
           <DialogDescription className="pt-4 text-base leading-relaxed">
             {tutorialSteps[currentStep].description}
           </DialogDescription>
@@ -123,6 +119,13 @@ export function TutorialButton() {
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+    if (!open) {
+      setCurrentStep(0)
+    }
+  }
+
   const handleNext = () => {
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1)
@@ -144,20 +147,10 @@ export function TutorialButton() {
         How to Play
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle>{tutorialSteps[currentStep].title}</DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOpen(false)}
-                className="h-6 w-6"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <DialogTitle>{tutorialSteps[currentStep].title}</DialogTitle>
             <DialogDescription className="pt-4 text-base leading-relaxed">
               {tutorialSteps[currentStep].description}
             </DialogDescription>
